@@ -1,0 +1,20 @@
+[package]
+name = "vigicrues-cli"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies.elephantry]
+version = "3.1"
+features = ["date"]
+
+[dependencies.chrono]
+version = "0.4"
+default-features = false
+
+[dependencies.tokio]
+version = "1.26"
+features = ["macros", "rt-multi-thread"]
+
+[dependencies.vigicrues]
+version = "0.1"
+path = "../"
