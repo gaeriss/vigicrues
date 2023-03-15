@@ -73,3 +73,16 @@ async fn fetch(station: &str, scale: Scale) -> Result<Data> {
 
     reqwest::get(&url).await?.json().await
 }
+
+#[cfg(test)]
+mod test {
+    #[tokio::test]
+    async fn level() {
+        assert!(dbg!(crate::level("M730242011").await).is_ok());
+    }
+
+    #[tokio::test]
+    async fn flow() {
+        assert!(dbg!(crate::flow("M730242011").await).is_ok());
+    }
+}
