@@ -24,7 +24,7 @@ mod installation {
 
 #[tokio::main]
 async fn main() -> Result {
-    let database_url = std::env::var("DATABASE_URL").unwrap();
+    let database_url = envir::get("DATABASE_URL")?;
     let elephantry = elephantry::Connection::new(&database_url)?;
 
     let installations =
