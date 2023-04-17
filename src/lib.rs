@@ -45,19 +45,10 @@ pub struct Serie {
 #[derive(Debug, Clone, serde::Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct Mesure {
-    #[serde(rename = "DtObsHydro", deserialize_with = "de_js_datetime")]
-    pub time: chrono::NaiveDateTime,
+    #[serde(rename = "DtObsHydro")]
+    pub time: chrono::DateTime<chrono::offset::Local>,
     #[serde(rename = "ResObsHydro")]
     pub mesure: f32,
-}
-
-fn de_js_datetime<'de, D>(deserializer: D) -> std::result::Result<chrono::NaiveDateTime, D::Error>
-where
-    D: serde::Deserializer<'de>,
-{
-    let timestamp = serde::Deserialize::deserialize(deserializer)?;
-
-    Ok(chrono::NaiveDateTime::from_timestamp_millis(timestamp).unwrap())
 }
 
 pub async fn level(station: &str) -> Result<Data> {
@@ -69,7 +60,7 @@ pub async fn flow(station: &str) -> Result<Data> {
 }
 
 async fn fetch(station: &str, scale: Scale) -> Result<Data> {
-    let url = format!("https://www.vigicrues.gouv.fr/services/observations.json/index.php?CdStationHydro={station}&GrdSerie={scale}");
+    let url = format!("https://www.vigicrues.gouv.fr/services/observations.json/index.php?CdStationHydro={station}&GrdSerie={scale}&FormatDate=iso");
 
     reqwest::get(&url).await?.json().await
 }

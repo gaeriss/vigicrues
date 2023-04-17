@@ -11,7 +11,7 @@ description = "Retrieve vigicrues.fr informations"
 [dependencies.chrono]
 version = "0.4"
 default-features = false
-features = ["serde"]
+features = ["clock", "serde"]
 
 [dependencies.reqwest]
 version = "0.11"
