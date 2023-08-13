@@ -7,7 +7,7 @@ mod mesure {
         pub time: chrono::DateTime<chrono::offset::Local>,
         pub installation_id: i32,
         pub level: f32,
-        pub flow: f32,
+        pub flow: Option<f32>,
     }
 }
 
@@ -33,21 +33,20 @@ async fn main() -> Result {
     for installation in installations {
         let level = vigicrues::level(&installation.station).await?;
         let flow = vigicrues::flow(&installation.station).await?;
+        let mut flow_mesures = flow.serie.mesures.iter();
 
         let mesures = level
             .serie
             .mesures
             .iter()
-            .zip(flow.serie.mesures)
-            .map(|(l, f)| {
-                if l.time != f.time {
-                    panic!();
-                }
+            .map(|l| {
+                let f = flow_mesures.find(|x| x.time == l.time);
+
                 mesure::Entity {
                     time: l.time,
                     installation_id: installation.id,
                     level: l.mesure,
-                    flow: f.mesure,
+                    flow: f.map(|x| x.mesure),
                 }
             })
             .collect::<Vec<_>>();
