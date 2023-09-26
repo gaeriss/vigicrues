@@ -6,7 +6,7 @@ mod mesure {
     pub struct Entity {
         pub time: chrono::DateTime<chrono::offset::Local>,
         pub installation_id: i32,
-        pub level: f32,
+        pub level: Option<f32>,
         pub flow: Option<f32>,
     }
 }
@@ -32,27 +32,41 @@ async fn main() -> Result {
 
     for installation in installations {
         let level = vigicrues::level(&installation.station).await?;
-        let flow = vigicrues::flow(&installation.station).await?;
-        let mut flow_mesures = flow.serie.mesures.iter();
 
         let mesures = level
             .serie
             .mesures
             .iter()
             .map(|l| {
-                let f = flow_mesures.find(|x| x.time == l.time);
-
                 mesure::Entity {
                     time: l.time,
                     installation_id: installation.id,
-                    level: l.mesure,
-                    flow: f.map(|x| x.mesure),
+                    level: Some(l.mesure),
+                    flow: None,
                 }
-            })
-            .collect::<Vec<_>>();
+            });
 
         for mesure in mesures {
             elephantry.upsert_one::<mesure::Model>(&mesure, "", "nothing")?;
+        }
+
+        let flow = vigicrues::flow(&installation.station).await?;
+
+        let mesures = flow
+            .serie
+            .mesures
+            .iter()
+            .map(|f| {
+                mesure::Entity {
+                    time: f.time,
+                    installation_id: installation.id,
+                    level: None,
+                    flow: Some(f.mesure),
+                }
+            });
+
+        for mesure in mesures {
+            elephantry.upsert_one::<mesure::Model>(&mesure, "(\"time\", installation_id)", "update set flow = excluded.flow")?;
         }
     }
 
